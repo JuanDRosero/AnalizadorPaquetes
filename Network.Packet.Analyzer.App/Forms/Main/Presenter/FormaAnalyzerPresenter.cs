@@ -24,45 +24,44 @@ namespace Network.Packet.Analyzer.App.Forms.Main.Presenter
         private IPAddress _localIP;
         private IAnalyzer _view;
 
-        public delegate void NewAddToListEvent(ListViewItem item);     // delegate used to create new AddToList event
-        public delegate void NewRemoveFromListEvent();                 // delegate used to create RemoVeFromList event
+        public delegate void NewAddToListEvent(ListViewItem item);     // delegate usado para crear un nuevo evebto AddToList
+        public delegate void NewRemoveFromListEvent();                 // delegate usado para crear un nuevo evento RemoveFromList
         public delegate void NewAddToPortListEvent(ListViewItem item);
         public delegate void NewRemoveFromPortListEvent(ListViewItem item);
         public delegate void NewRemoveFromPortListByKeyEvent(string key);
 
-        public event NewAddToListEvent AddToList;             // event used to add new (ListViewItem) in to ListView user control
-        public event NewRemoveFromListEvent RemoveFromList;   // event used to remove data frpm List
+        public event NewAddToListEvent AddToList;             // evento usado para agregar un nuevo ListViewItemen el listView
+        public event NewRemoveFromListEvent RemoveFromList;   // evento usado para removor datos de la lista
         public event NewAddToPortListEvent AddtoPortList;
         public event NewRemoveFromPortListEvent RemoveFromPortlist;
         public event NewRemoveFromPortListByKeyEvent RemoveFromPortlistByKey;
 
-        // this should be filled before start capturing
-        // this class contains local IPAddress and buffer size
+        // Debe ser llenado antes de realiar la captura
+        // esta clase contiene una ip local y un tamaño de buffer
         public StartupInfo StartupInformation { get; set; }
 
         private System.Windows.Forms.Timer TimerPorts { get; set; }
 
-        // This collection class represents buffer to store PacketInfo class ecsemplars  
+        // Esta colección de clases representa un bufer para almacenar los objetos de la clase PacketInfo
         Dictionary<string, PacketInfo> _pkgBuffer = null;
 
-        // this should be filled before start capturing
-        // this class contains local IPAddress and buffer size
+
      //   private static StartupInfo _startupInfo = null;
 
         Thread thrStartCapturing = null;
 
         Socket _socket;
 
-        //this value shows total number of all received packages
+        //Numero total de paquetes recibidos
         decimal _decPackagesReceived;
 
-        //buffer for received data
+        //Bufer de lso datos recibidos
         byte[] _bBuffer = new byte[8192];
 
-        //contains true if Stop button pressed
+        //Booleano para saber cuando se presiona el boton de estop
         bool _stopCapturing = false;
 
-        // Codes for low-level operating modes for the Socket
+        // Codigos para los modeos de operación Low-Level de los sockets
         byte[] _bIn = new byte[4] { 1, 0, 0, 0 };
         byte[] _bOut = new byte[4];
 
@@ -82,7 +81,7 @@ namespace Network.Packet.Analyzer.App.Forms.Main.Presenter
         }
 
         /// <summary>
-        /// NewAddToListEvent method called when adding new item in to List
+        /// NewAddToListEvent metodo llamado cuadno se añade un nuevo item a la lista
         /// </summary>
         /// <param name="item"></param>
         public void OnAddToList(ListViewItem item)
@@ -91,7 +90,7 @@ namespace Network.Packet.Analyzer.App.Forms.Main.Presenter
         }
 
         /// <summary>
-        /// NewRemoveFromListEvent method callet to remove item from list
+        /// NewRemoveFromListEvent metodo llamado cuadno se remueve un item de la lista
         /// </summary>
         public void OnRemoveFromList()
         {
@@ -171,8 +170,7 @@ namespace Network.Packet.Analyzer.App.Forms.Main.Presenter
 
 
         /// <summary>
-        /// This method converts received data
-        /// to packets information
+        /// Este metodo convirte los datos recibidos en paquetes
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="iReceived"></param>
@@ -182,19 +180,18 @@ namespace Network.Packet.Analyzer.App.Forms.Main.Presenter
 
             if (buffer.Length > 0 && iReceived != 0)
             {
-                //getting IP header and data information
+                //Obteniendo la ip y la información
                 PacketIP ipPacket = new PacketIP(buffer, iReceived);
 
-                // this string used as a key in the buffer
+                // Stringe que se usa como la clave del buffer
                 string strKey = _decPackagesReceived.ToString();   // Guid.NewGuid().ToString();
 
-                //searching which uperlevel protocol contain IP packet
+                //Busca a que protocolo corresponde el paquete de IP
                 switch (ipPacket.Protocol)
                 {
                     case "TCP":
                         {
-                            //if IP contains TCP creating new TCPData object
-                            //and assigning all TCP fields
+                            //SI el paquete corresponde a un TCP crea un objeto TCP u le asigna todos los campos
                             PacketTcp tcpPacket = new PacketTcp(ipPacket.Data, ipPacket.MessageLength);
 
                             //creating new PacketInfo object to fill the buffer
@@ -375,19 +372,18 @@ namespace Network.Packet.Analyzer.App.Forms.Main.Presenter
         /// </summary>
         public void CreateDetailedTree()
         {
-            //getting the index of selected item
+            //Obteniendo el index del objeto seleccionado
             ListView.SelectedIndexCollection indexCollection = _view.ListReceivedPackets.SelectedIndices;
             if (indexCollection.Count > 0)
             {
                 int index = indexCollection[0];
 
-                //getting the number of selected packet which is used as  an key in dictionary
+                //Obteniendo el numero de los paquetes seleccionados los cuales son usados como una clave para el diccionario
                 string strKey = _view.ListReceivedPackets.Items[index].SubItems[0].Text;
 
                 PacketInfo pkgInfo = new PacketInfo();
 
-                //trying to get data with specified key if this data exist 
-                //creating a detailed tree
+                //con base en la clave se crea el arbol
                 if (_pkgBuffer.TryGetValue(strKey, out pkgInfo))
                 {
                     switch (pkgInfo.IP.Protocol)
